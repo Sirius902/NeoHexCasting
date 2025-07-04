@@ -1,7 +1,9 @@
 package at.petrak.hexcasting.forge.network;
 
 import at.petrak.hexcasting.common.msgs.*;
+import com.samsthenerd.inline.utils.cradles.EntTypeCradle;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
@@ -15,6 +17,8 @@ import java.util.function.Consumer;
 public class ForgePacketHandler {
 
     public static void init(IEventBus modBus) {
+        // TODO(Sirius902) Workaround to force inline to load on the client to prevent crash later.
+        EntTypeCradle.fromTypeId(ResourceLocation.fromNamespaceAndPath("minecraft", "pig")).get().getType();
         modBus.addListener(RegisterPayloadHandlersEvent.class, ev -> {
             final PayloadRegistrar registar = ev.registrar("1");
 
