@@ -189,8 +189,8 @@ class CastingVM(var image: CastingImage, val env: CastingEnvironment) {
                     }
 
                     SpecialPatterns.EVANITION.angles -> {
-                        val newParens = this.image.parenthesized.init()
-                        val last = newParens.last()
+                        val newParens = if (this.image.parenthesized.isEmpty()) Vector.empty() else this.image.parenthesized.init()
+                        val last = if (this.image.parenthesized.isEmpty()) null else this.image.parenthesized.last()
                         val newParenCount = this.image.parenCount + if (last == null || last.escaped || last.iota !is PatternIota) 0 else when (last.iota.pattern) {
                             SpecialPatterns.INTROSPECTION -> -1
                             SpecialPatterns.RETROSPECTION -> 1
