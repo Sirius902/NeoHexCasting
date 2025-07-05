@@ -2335,7 +2335,7 @@ public sealed abstract class Vector<A> extends AbstractList<A> implements Random
         public <T> void consider(int n, T[] a) {
             final int count = a.length * (1 << (BITS * (n - 1)));
             final int lo0 = Math.max(this.lo - this.pos, 0);
-            final int hi0 = Math.max(this.hi - this.pos, count);
+            final int hi0 = Math.min(this.hi - this.pos, count);
             if(hi0 > lo0) {
                 this.addSlice(n, a, lo0, hi0);
                 this.len += (hi0 - lo0);
