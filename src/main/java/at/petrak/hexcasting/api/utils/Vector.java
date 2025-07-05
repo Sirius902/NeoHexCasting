@@ -929,7 +929,7 @@ public sealed abstract class Vector<A> extends AbstractList<A> implements Random
                 } else {
                     return new Vector2<>(
                             copyUpdate(this.prefix1, index, elem),
-                            this.len1, this.data2, this.prefix1, this.length0
+                            this.len1, this.data2, this.suffix1, this.length0
                     );
                 }
             } else throw ioob(index);
