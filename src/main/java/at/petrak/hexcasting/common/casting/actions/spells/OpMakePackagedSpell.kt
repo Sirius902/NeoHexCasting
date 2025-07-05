@@ -10,6 +10,7 @@ import at.petrak.hexcasting.api.casting.iota.Iota
 import at.petrak.hexcasting.api.casting.mishaps.MishapBadItem
 import at.petrak.hexcasting.api.casting.mishaps.MishapBadOffhandItem
 import at.petrak.hexcasting.api.casting.mishaps.MishapOthersName
+import at.petrak.hexcasting.api.utils.Vector
 import at.petrak.hexcasting.api.utils.extractMedia
 import at.petrak.hexcasting.api.utils.isMediaItem
 import at.petrak.hexcasting.common.items.magic.ItemPackagedHex
@@ -26,11 +27,11 @@ class OpMakePackagedSpell(val isValid: Predicate<ItemStack>, val expectedTypeDes
     
     override val argc = 2
     override fun execute(
-            args: List<Iota>,
+            args: Vector<Iota>,
             env: CastingEnvironment
     ): SpellAction.Result {
         val entity = args.getItemEntity(env.world, 0, argc)
-        val patterns = args.getList(1, argc).toList()
+        val patterns = args.getList(1, argc)
 
         val (handStack) = env.getHeldItemToOperateOn {
             val hexHolder = IXplatAbstractions.INSTANCE.findHexHolder(it)
@@ -69,7 +70,7 @@ class OpMakePackagedSpell(val isValid: Predicate<ItemStack>, val expectedTypeDes
         )
     }
 
-    private inner class Spell(val itemEntity: ItemEntity, val patterns: List<Iota>, val stack: ItemStack) : RenderedSpell {
+    private inner class Spell(val itemEntity: ItemEntity, val patterns: Vector<Iota>, val stack: ItemStack) : RenderedSpell {
         override fun cast(env: CastingEnvironment) {
             val hexHolder = IXplatAbstractions.INSTANCE.findHexHolder(stack)
             if (hexHolder != null

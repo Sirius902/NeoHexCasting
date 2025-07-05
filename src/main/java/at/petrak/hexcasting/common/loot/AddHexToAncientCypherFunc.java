@@ -6,6 +6,7 @@ import at.petrak.hexcasting.api.casting.math.HexDir;
 import at.petrak.hexcasting.api.casting.math.HexPattern;
 import at.petrak.hexcasting.api.item.VariantItem;
 import at.petrak.hexcasting.api.misc.MediaConstants;
+import at.petrak.hexcasting.api.utils.Vector;
 import at.petrak.hexcasting.common.items.magic.ItemAncientCypher;
 import at.petrak.hexcasting.common.lib.HexDataComponents;
 import at.petrak.hexcasting.common.lib.HexLootFunctions;
@@ -53,10 +54,10 @@ public class AddHexToAncientCypherFunc extends LootItemConditionalFunction {
         stack.set(HexDataComponents.MEDIA, 32 * MediaConstants.SHARD_UNIT);
         stack.set(HexDataComponents.MEDIA_MAX, 32 * MediaConstants.SHARD_UNIT);
         stack.set(HexDataComponents.VARIANT, rand.nextInt(8));
-        stack.set(HexDataComponents.PATTERNS, Arrays.stream(hex.getSecond()).map(el -> {
+        stack.set(HexDataComponents.PATTERNS, Vector.from(Arrays.stream(hex.getSecond()).map(el -> {
             var pieces = el.split(" ");
             return new PatternIota(HexPattern.fromAngles(pieces[1],HexDir.fromString(pieces[0])));
-        }).collect(Collectors.toList()));
+        }).collect(Collectors.toList())));
 
         return stack;
     }

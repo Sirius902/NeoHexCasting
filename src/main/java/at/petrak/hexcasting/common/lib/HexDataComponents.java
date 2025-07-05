@@ -5,6 +5,7 @@ import at.petrak.hexcasting.api.casting.iota.Iota;
 import at.petrak.hexcasting.api.casting.iota.IotaType;
 import at.petrak.hexcasting.api.casting.math.HexPattern;
 import at.petrak.hexcasting.api.pigment.FrozenPigment;
+import at.petrak.hexcasting.api.utils.Vector;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
@@ -17,6 +18,7 @@ import net.minecraft.util.Unit;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import static at.petrak.hexcasting.api.HexAPI.modLoc;
 
@@ -70,10 +72,10 @@ public class HexDataComponents {
                     .networkSynchronized(IotaType.TYPED_STREAM_CODEC)
                     .build());
 
-    public static final DataComponentType<List<Iota>> PATTERNS = register("patterns",
-            DataComponentType.<List<Iota>>builder()
-                    .persistent(IotaType.TYPED_CODEC.listOf())
-                    .networkSynchronized(IotaType.TYPED_STREAM_CODEC.apply(ByteBufCodecs.list()))
+    public static final DataComponentType<Vector<Iota>> PATTERNS = register("patterns",
+            DataComponentType.<Vector<Iota>>builder()
+                    .persistent(IotaType.TYPED_CODEC.listOf().xmap(Vector::from, Function.identity()))
+                    .networkSynchronized(IotaType.TYPED_STREAM_CODEC.apply(ByteBufCodecs.list()).map(Vector::from, Function.identity()))
                     .build());
     public static final DataComponentType<Long> MEDIA = register("media",
             DataComponentType.<Long>builder()

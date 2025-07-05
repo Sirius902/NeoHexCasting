@@ -13,17 +13,16 @@ import net.minecraft.nbt.NbtOps
 
 object OpPeekLocal : Action {
     override fun operate(env: CastingEnvironment, image: CastingImage, continuation: SpellContinuation): OperationResult {
-        val stack = image.stack.toMutableList()
+        val stack = image.stack
 
         val rm = if (image.userData.contains(HexAPI.RAVENMIND_USERDATA)) {
             IotaType.TYPED_CODEC.parse(NbtOps.INSTANCE, image.userData.getCompound(HexAPI.RAVENMIND_USERDATA)).getOrThrow()
         } else {
             NullIota.INSTANCE
         }
-        stack.add(rm)
 
         // does not mutate userdata
-        val image2 = image.withUsedOp().copy(stack = stack)
+        val image2 = image.withUsedOp().copy(stack = stack.appended(rm))
         return OperationResult(image2, listOf(), continuation, HexEvalSounds.NORMAL_EXECUTE)
     }
 }

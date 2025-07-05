@@ -1,7 +1,7 @@
 package at.petrak.hexcasting.api.casting.eval.vm
 
 import at.petrak.hexcasting.api.HexAPI
-import at.petrak.hexcasting.api.casting.SpellList
+import at.petrak.hexcasting.api.casting.PatternShapeMatch.*
 import at.petrak.hexcasting.api.casting.eval.*
 import at.petrak.hexcasting.api.casting.eval.sideeffects.OperatorSideEffect
 import at.petrak.hexcasting.api.casting.eval.vm.CastingImage.ParenthesizedIota
@@ -15,6 +15,7 @@ import at.petrak.hexcasting.api.casting.mishaps.Mishap
 import at.petrak.hexcasting.api.casting.mishaps.MishapInternalException
 import at.petrak.hexcasting.api.casting.mishaps.MishapStackSize
 import at.petrak.hexcasting.api.casting.mishaps.MishapTooManyCloseParens
+import at.petrak.hexcasting.api.utils.Vector
 import at.petrak.hexcasting.common.lib.hex.HexEvalSounds
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
@@ -31,7 +32,7 @@ class CastingVM(var image: CastingImage, val env: CastingEnvironment) {
     /**
      * Execute a single iota.
      */
-    fun queueExecuteAndWrapIota(iota: Iota, world: ServerLevel): ExecutionClientView = queueExecuteAndWrapIotas(listOf(iota), world)
+    fun queueExecuteAndWrapIota(iota: Iota, world: ServerLevel): ExecutionClientView = queueExecuteAndWrapIotas(Vector.from(listOf(iota)), world)
 
     /**
      * The main entrypoint to the VM. Given a list of iotas, execute them in sequence, and return whatever the client
@@ -39,9 +40,9 @@ class CastingVM(var image: CastingImage, val env: CastingEnvironment) {
      *
      * Mutates this
      */
-    fun queueExecuteAndWrapIotas(iotas: List<Iota>, world: ServerLevel): ExecutionClientView {
+    fun queueExecuteAndWrapIotas(iotas: Vector<Iota>, world: ServerLevel): ExecutionClientView {
         // Initialize the continuation stack to a single top-level eval for all iotas.
-        var continuation = SpellContinuation.Done.pushFrame(FrameEvaluate(SpellList.LList(0, iotas), false))
+        var continuation = SpellContinuation.Done.pushFrame(FrameEvaluate(iotas, false))
         // Begin aggregating info
         val info = TempControllerInfo(earlyExit = false)
         var lastResolutionType = ResolvedPatternType.UNRESOLVED
@@ -173,8 +174,7 @@ class CastingVM(var image: CastingImage, val env: CastingEnvironment) {
 
         val out = if (displayDepth > 0) {
             if (this.image.escapeNext) {
-                val newParens = this.image.parenthesized.toMutableList()
-                newParens.add(ParenthesizedIota(iota, true))
+                val newParens = this.image.parenthesized.appended(ParenthesizedIota(iota, true))
                 this.image.copy(
                     escapeNext = false,
                     parenthesized = newParens
@@ -189,8 +189,8 @@ class CastingVM(var image: CastingImage, val env: CastingEnvironment) {
                     }
 
                     SpecialPatterns.EVANITION.angles -> {
-                        val newParens = this.image.parenthesized.toMutableList()
-                        val last = newParens.removeLastOrNull()
+                        val newParens = this.image.parenthesized.init()
+                        val last = newParens.last()
                         val newParenCount = this.image.parenCount + if (last == null || last.escaped || last.iota !is PatternIota) 0 else when (last.iota.pattern) {
                             SpecialPatterns.INTROSPECTION -> -1
                             SpecialPatterns.RETROSPECTION -> 1
@@ -201,8 +201,7 @@ class CastingVM(var image: CastingImage, val env: CastingEnvironment) {
 
                     SpecialPatterns.INTROSPECTION.angles -> {
                         // we have escaped the parens onto the stack; we just also record our count.
-                        val newParens = this.image.parenthesized.toMutableList()
-                        newParens.add(ParenthesizedIota(iota, false))
+                        val newParens = this.image.parenthesized.appended(ParenthesizedIota(iota, false))
                         this.image.copy(
                             parenthesized = newParens,
                             parenCount = this.image.parenCount + 1
@@ -213,20 +212,18 @@ class CastingVM(var image: CastingImage, val env: CastingEnvironment) {
                         val newParenCount = this.image.parenCount - 1
                         displayDepth--
                         if (newParenCount == 0) {
-                            val newStack = this.image.stack.toMutableList()
-                            newStack.add(ListIota(this.image.parenthesized.toList().map { it.iota }))
+                            val newStack = this.image.stack.appended(ListIota(this.image.parenthesized.map { it.iota }))
                             this.image.copy(
                                 stack = newStack,
                                 parenCount = newParenCount,
-                                parenthesized = listOf()
+                                parenthesized = Vector.empty()
                             ) to ResolvedPatternType.EVALUATED
                         } else if (newParenCount < 0) {
                             throw MishapTooManyCloseParens()
                         } else {
                             // we have this situation: "(()"
                             // we need to add the close paren
-                            val newParens = this.image.parenthesized.toMutableList()
-                            newParens.add(ParenthesizedIota(iota, false))
+                            val newParens = this.image.parenthesized.appended(ParenthesizedIota(iota, false))
                             this.image.copy(
                                 parenCount = newParenCount,
                                 parenthesized = newParens
@@ -235,8 +232,7 @@ class CastingVM(var image: CastingImage, val env: CastingEnvironment) {
                     }
 
                     else -> {
-                        val newParens = this.image.parenthesized.toMutableList()
-                        newParens.add(ParenthesizedIota(iota, false))
+                        val newParens = this.image.parenthesized.appended(ParenthesizedIota(iota, false))
                         this.image.copy(
                             parenthesized = newParens
                         ) to ResolvedPatternType.ESCAPED
@@ -244,8 +240,7 @@ class CastingVM(var image: CastingImage, val env: CastingEnvironment) {
                 }
             }
         } else if (this.image.escapeNext) {
-            val newStack = this.image.stack.toMutableList()
-            newStack.add(iota)
+            val newStack = this.image.stack.appended(iota)
             this.image.copy(
                 stack = newStack,
                 escapeNext = false,

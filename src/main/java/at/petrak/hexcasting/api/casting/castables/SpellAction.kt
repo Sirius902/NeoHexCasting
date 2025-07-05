@@ -10,6 +10,7 @@ import at.petrak.hexcasting.api.casting.eval.vm.SpellContinuation
 import at.petrak.hexcasting.api.casting.iota.Iota
 import at.petrak.hexcasting.api.casting.mishaps.MishapNotEnoughArgs
 import at.petrak.hexcasting.api.casting.mishaps.MishapNotEnoughMedia
+import at.petrak.hexcasting.api.utils.Vector
 import at.petrak.hexcasting.common.lib.hex.HexEvalSounds
 import net.minecraft.nbt.CompoundTag
 
@@ -21,24 +22,24 @@ interface SpellAction : Action {
     fun awardsCastingStat(ctx: CastingEnvironment): Boolean = true
 
     fun executeWithUserdata(
-        args: List<Iota>,
+        args: Vector<Iota>,
         env: CastingEnvironment,
         userData: CompoundTag
     ): Result =
         execute(args, env)
 
     fun execute(
-        args: List<Iota>,
+        args: Vector<Iota>,
         env: CastingEnvironment
     ): Result
 
     override fun operate(env: CastingEnvironment, image: CastingImage, continuation: SpellContinuation): OperationResult {
-        val stack = image.stack.toMutableList()
+        val stack = Vector.VectorBuilder<Iota>()
 
-        if (this.argc > stack.size)
-            throw MishapNotEnoughArgs(this.argc, stack.size)
-        val args = stack.takeLast(this.argc)
-        for (_i in 0 until this.argc) stack.removeLast()
+        if (this.argc > image.stack.size)
+            throw MishapNotEnoughArgs(this.argc, image.stack.size)
+        val args = image.stack.takeRight(this.argc)
+        stack.addAll(image.stack.dropRight(this.argc))
 
         // execute!
         val userDataMut = image.userData.copy()
@@ -62,7 +63,7 @@ interface SpellAction : Action {
         for (spray in result.particles)
             sideEffects.add(OperatorSideEffect.Particles(spray))
 
-        val image2 = image.copy(stack = stack, opsConsumed = image.opsConsumed + result.opCount, userData = userDataMut)
+        val image2 = image.copy(stack = stack.result(), opsConsumed = image.opsConsumed + result.opCount, userData = userDataMut)
 
         val sound = if (this.hasCastingSound(env)) HexEvalSounds.SPELL else HexEvalSounds.MUTE
         return OperationResult(image2, sideEffects, continuation, sound)

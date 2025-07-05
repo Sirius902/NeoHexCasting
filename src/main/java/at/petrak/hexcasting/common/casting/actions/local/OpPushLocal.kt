@@ -15,12 +15,12 @@ import net.minecraft.nbt.Tag
 
 object OpPushLocal : Action {
     override fun operate(env: CastingEnvironment, image: CastingImage, continuation: SpellContinuation): OperationResult {
-        val stack = image.stack.toMutableList()
-
-        if (stack.isEmpty())
+        if (image.stack.isEmpty())
             throw MishapNotEnoughArgs(1, 0)
 
-        val newLocal = stack.removeLast()
+        val stack = image.stack.init()
+
+        val newLocal = image.stack.last()
         if (newLocal.type == HexIotaTypes.NULL)
             image.userData.remove(HexAPI.RAVENMIND_USERDATA)
          else

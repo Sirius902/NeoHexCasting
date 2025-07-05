@@ -1,9 +1,9 @@
 package at.petrak.hexcasting.api.casting.eval.vm
 
-import at.petrak.hexcasting.api.casting.SpellList
 import at.petrak.hexcasting.api.casting.eval.CastResult
 import at.petrak.hexcasting.api.casting.iota.GarbageIota
 import at.petrak.hexcasting.api.casting.iota.Iota
+import at.petrak.hexcasting.api.utils.Vector
 import at.petrak.hexcasting.api.casting.iota.IotaType
 import at.petrak.hexcasting.common.lib.HexRegistries
 import at.petrak.hexcasting.common.lib.hex.HexContinuationTypes
@@ -47,7 +47,7 @@ interface ContinuationFrame {
      * In other words, we should consume Evaluate frames until we hit a FinishEval or Thoth frame.
      * @return whether the break should stop here, alongside the new stack state (e.g. for finalizing a Thoth)
      */
-    fun breakDownwards(stack: List<Iota>): Pair<Boolean, List<Iota>>
+    fun breakDownwards(stack: Vector<Iota>): Pair<Boolean, Vector<Iota>>
 
     /**
      * Return the number of iotas contained inside this frame, used for determining whether it is valid to serialise.
@@ -61,7 +61,7 @@ interface ContinuationFrame {
         fun codec(): MapCodec<U>
 
         fun streamCodec(): StreamCodec<RegistryFriendlyByteBuf, U>
-        
+
         companion object {
             //TODO if doesn't exist use `FrameEvaluate(SpellList.LList(0, listOf()), false)` as default value
             @JvmStatic

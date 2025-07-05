@@ -2,6 +2,7 @@ package at.petrak.hexcasting.api.addldata;
 
 import at.petrak.hexcasting.api.casting.iota.Iota;
 import at.petrak.hexcasting.api.pigment.FrozenPigment;
+import at.petrak.hexcasting.api.utils.Vector;
 import net.minecraft.server.level.ServerLevel;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,9 +15,9 @@ public interface ADHexHolder {
     boolean hasHex();
 
     @Nullable
-    List<Iota> getHex(ServerLevel level);
+    Vector<Iota> getHex(ServerLevel level);
 
-    void writeHex(List<Iota> patterns, @Nullable FrozenPigment pigment, long media);
+    void writeHex(Vector<Iota> patterns, @Nullable FrozenPigment pigment, long media);
 
     void clearHex();
 
