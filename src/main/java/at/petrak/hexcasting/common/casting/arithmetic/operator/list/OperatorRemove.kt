@@ -18,6 +18,6 @@ object OperatorRemove : OperatorBasic(2, IotaMultiPredicate.pair(IotaPredicate.o
         val index = it.nextInt(arity)
         if (index < 0 || index >= list.size)
             return list.asActionResult
-        return list.take(index).appendedAll(list.dropRight(index + 1)).asActionResult
+        return list.take(index).appendedAll(list.drop(index + 1)).asActionResult
     }
 }
