@@ -7,6 +7,7 @@ plugins {
     kotlin("jvm") version "2.0.21"
     kotlin("plugin.serialization") version "2.0.0"
     id("at.petra-k.pkpcpbp.PKJson5Plugin") version "0.2.0-pre-103"
+    `maven-publish`
 }
 
 val modGroup = property("mod_group_id") as String
@@ -215,5 +216,19 @@ idea {
     module {
         isDownloadSources = true
         isDownloadJavadoc = true
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = modGroup
+            artifactId = modId
+            version = modVersion
+            from(components["java"])
+        }
+    }
+    repositories {
+        mavenLocal()
     }
 }
